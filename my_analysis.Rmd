@@ -1,0 +1,81 @@
+---
+title: "My data analysis"
+author: "ronny"
+date: "4/21/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(fs)
+library(purrr)
+library(janitor)
+```
+
+# Import data
+
+I'm going to read the three data files
+
+```{r}
+setosa <- read_csv("data/setosa.csv")
+versicolor <- read_csv("data/versicolor.csv")
+virginica <- read_csv("data/virginica.csv")
+
+
+iris_data <- dir_ls("data/") %>% 
+  map_dfr(read_csv, .id = "file") %>% 
+  clean_names()
+```
+
+# Plots
+
+```{r}
+iris_data %>% 
+  filter(species == "setosa") %>% 
+  ggplot(aes(x = petal_length, y = petal_width)) +
+  geom_point(size = 5, color = "#75AADB") +
+  theme_bw(base_size = 20)
+
+iris_data %>% 
+  filter(species == "versicolor") %>% 
+  ggplot(aes(x = petal_length, y = petal_width)) +
+  geom_point(size = 5, color = "#75AADB") +
+  theme_bw(base_size = 20)
+
+iris_data %>% 
+  filter(species == "virginica") %>% 
+  ggplot(aes(x = petal_length, y = petal_width)) +
+  geom_point(size = 5, color = "#75AADB") +
+  theme_bw(base_size = 20)
+```
+
+
+
+```{r}
+create_plot <- function(data, specie_name) {
+  data %>% 
+  filter(species == specie_name) %>% 
+  ggplot(aes(x = petal_length, y = petal_width)) +
+  geom_point(size = 5, color = "#75AADB") +
+  theme_bw(base_size = 20)
+}
+```
+
+```{r}
+create_plot(data = iris_data, specie_name = "setosa")
+create_plot(data = iris_data, specie_name = "virginica")
+create_plot(data = iris_data, specie_name = "versicolor")
+
+species_total <- iris_data %>% 
+  select(species) %>% 
+  distinct() %>% 
+  pull()
+
+map(.x = species_total, .f = function(plot){
+  create_plot(data = iris_data, specie_name = species_total)
+})
+```
+
